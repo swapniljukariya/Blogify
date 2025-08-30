@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { FiUser, FiLogOut, FiPlus, FiBookmark, FiGrid } from 'react-icons/fi'
 
 export default function Navbar() {
   const { isAuthenticated, logout, user } = useAuth()
@@ -8,6 +9,10 @@ export default function Navbar() {
   const handleLogout = () => {
     logout()
     navigate('/login')
+  }
+
+  const handleProfileClick = () => {
+    navigate('/profile')
   }
 
   const linkClass = ({ isActive }) => 
@@ -28,9 +33,9 @@ export default function Navbar() {
 
   // Auth-specific routes
   const authRoutes = [
-    { path: '/dashboard', name: 'Dashboard' },
-    { path: '/create-post', name: 'Create Post' },
-    { path: '/bookmarks', name: 'Bookmarks' }
+    { path: '/dashboard', name: 'Dashboard', icon: <FiGrid className="w-4 h-4" /> },
+    { path: '/create-post', name: 'Create Post', icon: <FiPlus className="w-4 h-4" /> },
+    { path: '/bookmarks', name: 'Bookmarks', icon: <FiBookmark className="w-4 h-4" /> }
   ]
 
   return (
@@ -65,7 +70,10 @@ export default function Navbar() {
               to={route.path} 
               className={linkClass}
             >
-              {route.name}
+              <span className="flex items-center space-x-1">
+                {route.icon}
+                <span>{route.name}</span>
+              </span>
             </NavLink>
           ))}
         </div>
@@ -85,33 +93,77 @@ export default function Navbar() {
               </NavLink>
             </>
           ) : (
-            <div className="flex items-center space-x-4">
-              {user && (
-                <div className="hidden md:flex items-center space-x-3">
+            <div className="flex items-center space-x-3">
+              {/* Create Post Button (Mobile visible) */}
+              <NavLink 
+                to="/create-post" 
+                className="md:hidden p-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 text-white hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 shadow-md"
+              >
+                <FiPlus className="w-5 h-5" />
+              </NavLink>
+
+              {/* Profile Button */}
+              <button
+                onClick={handleProfileClick}
+                className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-all duration-300 group"
+                title="Your Profile"
+              >
+                <div className="relative">
                   <img 
-                    src={user.avatar || 'https://i.pravatar.cc/40'} 
-                    alt={user.name} 
-                    className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
+                    src={user?.profileImage || user?.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
+                    alt={user?.name || user?.email} 
+                    className="w-8 h-8 rounded-full border-2 border-white shadow-sm object-cover group-hover:border-blue-200 transition-colors"
+                    onError={(e) => {
+                      e.target.src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+                    }}
                   />
-                  <span className="text-sm font-medium text-gray-600">
-                    {user.name || user.email.split('@')[0]}
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                </div>
+                
+                {/* User name - hidden on mobile, shown on desktop */}
+                <div className="hidden md:flex flex-col items-start">
+                  <span className="text-sm font-medium text-gray-900">
+                    {user?.name || user?.fullName || user?.email?.split('@')[0]}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    @{user?.userName || user?.email?.split('@')[0]}
                   </span>
                 </div>
-              )}
+                
+                {/* Dropdown arrow */}
+                <svg 
+                  className="hidden md:block w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {/* Logout Button */}
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 rounded-lg bg-gradient-to-r from-red-500 to-pink-500 text-white font-medium hover:from-red-600 hover:to-pink-600 transition-all duration-300 shadow-md hover:shadow-lg flex items-center space-x-1"
+                className="hidden md:flex items-center space-x-2 px-4 py-2 rounded-lg bg-gradient-to-r from-red-500 to-pink-500 text-white font-medium hover:from-red-600 hover:to-pink-600 transition-all duration-300 shadow-md hover:shadow-lg"
+                title="Logout"
               >
-                <span>Logout</span>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
-                </svg>
+                <FiLogOut className="w-4 h-4" />
+                <span className="hidden lg:block">Logout</span>
+              </button>
+
+              {/* Mobile Logout Button */}
+              <button
+                onClick={handleLogout}
+                className="md:hidden p-2 rounded-lg hover:bg-red-50 text-red-600 transition-colors"
+                title="Logout"
+              >
+                <FiLogOut className="w-5 h-5" />
               </button>
             </div>
           )}
         </div>
 
-        {/* Mobile Menu Button (would need state and click handler) */}
+        {/* Mobile Menu Button */}
         <button className="md:hidden p-2 rounded-lg hover:bg-gray-100">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -119,27 +171,29 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile Menu (would need state management) */}
-      {/* <div className="md:hidden bg-white py-2 px-4 shadow-lg">
-        {commonRoutes.map(route => (
-          <NavLink 
-            key={route.path} 
-            to={route.path} 
-            className="block py-2 px-4 hover:bg-gray-100 rounded-lg"
+      {/* Profile Dropdown Menu (would need state management) */}
+      {/* 
+      {isProfileDropdownOpen && (
+        <div className="absolute right-4 top-16 bg-white rounded-lg shadow-lg border border-gray-200 py-2 w-48 z-50">
+          <button className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2">
+            <FiUser className="w-4 h-4" />
+            <span>Profile</span>
+          </button>
+          <button className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2">
+            <FiSettings className="w-4 h-4" />
+            <span>Settings</span>
+          </button>
+          <hr className="my-2" />
+          <button 
+            onClick={handleLogout}
+            className="w-full text-left px-4 py-2 hover:bg-gray-50 text-red-600 flex items-center space-x-2"
           >
-            {route.name}
-          </NavLink>
-        ))}
-        {isAuthenticated && authRoutes.map(route => (
-          <NavLink 
-            key={route.path} 
-            to={route.path} 
-            className="block py-2 px-4 hover:bg-gray-100 rounded-lg"
-          >
-            {route.name}
-          </NavLink>
-        ))}
-      </div> */}
+            <FiLogOut className="w-4 h-4" />
+            <span>Logout</span>
+          </button>
+        </div>
+      )}
+      */}
     </nav>
   )
 }

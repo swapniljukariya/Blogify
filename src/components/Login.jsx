@@ -10,7 +10,7 @@ export default function Login() {
   const navigate = useNavigate()
 
   // Get backend URL from environment variable
-  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
   const handleSubmit = async (e) => {
     e.preventDefault()

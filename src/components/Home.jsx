@@ -14,6 +14,9 @@ const Home = () => {
   const [backendStatus, setBackendStatus] = useState('connecting');
   const [retryCount, setRetryCount] = useState(0);
 
+  // Get backend URL from environment variables with fallback
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+
   // Process dummy blogs data
   const processedDummyBlogs = useMemo(() => {
     return dummyBlogs.map(blog => ({
@@ -32,6 +35,32 @@ const Home = () => {
     }));
   }, []);
 
+  // Custom fetch with timeout function
+  const fetchWithTimeout = (url, options = {}) => {
+    const controller = new AbortController();
+    const timeout = 5000;
+    
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        reject(new Error('Request timed out'));
+        controller.abort();
+      }, timeout);
+      
+      fetch(url, {
+        ...options,
+        signal: controller.signal
+      })
+        .then((response) => {
+          clearTimeout(timer);
+          resolve(response);
+        })
+        .catch((err) => {
+          clearTimeout(timer);
+          reject(err);
+        });
+    });
+  };
+
   // Fetch blogs from backend and combine with dummy data
   useEffect(() => {
     const fetchBlogs = async () => {
@@ -40,10 +69,8 @@ const Home = () => {
         setError(null);
         setBackendStatus('connecting');
         
-        // Try to fetch from backend
-        const response = await fetch('http://localhost:5000/api/blog', {
-          signal: AbortSignal.timeout(5000)
-        });
+        // Try to fetch from backend using environment variable URL
+        const response = await fetchWithTimeout(`${BACKEND_URL}/api/blog`);
         
         if (response.ok) {
           const backendBlogs = await response.json();
@@ -82,7 +109,7 @@ const Home = () => {
     };
 
     fetchBlogs();
-  }, [retryCount, processedDummyBlogs]);
+  }, [retryCount, processedDummyBlogs, BACKEND_URL]);
 
   // Get unique categories from all blogs
   const categories = useMemo(() => {
@@ -121,7 +148,7 @@ const Home = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading blogs...</p>
-          <p className="text-sm text-gray-500 mt-2">Connecting to backend</p>
+          <p className="text-sm text-gray-500 mt-2">Connecting to {BACKEND_URL}</p>
         </div>
       </div>
     );

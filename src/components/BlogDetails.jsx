@@ -20,6 +20,8 @@ const BlogDetails = () => {
   const [newComment, setNewComment] = useState('');
   const [showComments, setShowComments] = useState(true);
 
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+
   useEffect(() => {
     const fetchBlog = async () => {
       try {
@@ -51,9 +53,9 @@ const BlogDetails = () => {
             throw new Error('Dummy blog not found');
           }
         } else {
-          // Fetch from database
+          // Fetch from database using environment variable
           setIsDummyBlog(false);
-          const response = await fetch(`http://localhost:5000/api/blog/${id}`);
+          const response = await fetch(`${BACKEND_URL}/api/blog/${id}`);
           
           if (response.ok) {
             const blogData = await response.json();
@@ -84,7 +86,7 @@ const BlogDetails = () => {
     };
 
     fetchBlog();
-  }, [id]);
+  }, [id, BACKEND_URL]);
 
   // Generate dummy comments for demo
   const generateDummyComments = () => {
@@ -137,7 +139,7 @@ const BlogDetails = () => {
     }
 
     try {
-      // TODO: Implement actual like API call
+      // TODO: Implement actual like API call using BACKEND_URL
       setLikes(prev => isLiked ? prev - 1 : prev + 1);
       setIsLiked(!isLiked);
     } catch (error) {
@@ -166,7 +168,7 @@ const BlogDetails = () => {
     }
 
     try {
-      // TODO: Implement actual comment API call
+      // TODO: Implement actual comment API call using BACKEND_URL
       const comment = {
         _id: Date.now().toString(),
         user: {

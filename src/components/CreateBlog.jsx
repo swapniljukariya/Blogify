@@ -19,6 +19,9 @@ export default function CreateBlog() {
   const [description, setDescription] = useState('');
   const [image, setImage] = useState('');
 
+  // Get backend URL from environment variables with fallback
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitLoading(true);
@@ -39,7 +42,7 @@ export default function CreateBlog() {
         console.log(key, ':', val);
       }
   
-      const response = await fetch('http://localhost:5000/api/blog', {
+      const response = await fetch(`${BACKEND_URL}/api/blog`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
